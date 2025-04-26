@@ -11,6 +11,9 @@ from services.video_processor import extract_video_content
 from services.content_discovery import get_related_youtube_videos, search_related_blogs
 from services.content_generator import generate_description, generate_tags
 
+# Set NLTK data path to match the one in Dockerfile
+nltk.data.path.append('/app/nltk_data')
+
 # Load environment variables (optional now)
 load_dotenv()
 
@@ -19,6 +22,8 @@ try:
     nltk.data.find('tokenizers/punkt')
     nltk.data.find('corpora/stopwords')
 except LookupError:
+    # This should not be needed since we've pre-downloaded in Dockerfile
+    # but keeping as fallback for local development
     nltk.download('punkt')
     nltk.download('stopwords')
 

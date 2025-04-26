@@ -14,19 +14,23 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download NLTK data
-RUN python -m nltk.downloader punkt stopwords
-
-# Copy the application code
-COPY . .
-
-# Create upload directory
-RUN mkdir -p uploads && chmod 777 uploads
-
 # Create a non-root user with UID and GID between 10000-20000
 RUN groupadd -g 10001 appuser && useradd -u 10001 -g appuser -d /home/appuser -m appuser && \
     chown -R appuser:appuser /app && \
     chmod -R 755 /app
+
+# Create upload directory with proper permissions
+RUN mkdir -p uploads && chmod 777 uploads
+
+# Pre-download NLTK data to the app directory (which we've already given permissions to)
+# This avoids trying to write to /home/appuser/nltk_data at runtime
+ENV NLTK_DATA /app/nltk_data
+RUN mkdir -p /app/nltk_data && \
+    python -m nltk.downloader -d /app/nltk_data punkt stopwords && \
+    chmod -R 755 /app/nltk_data
+
+# Copy the application code
+COPY . .
 
 # Expose the port the app runs on
 EXPOSE 8080
