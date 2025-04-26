@@ -1,11 +1,7 @@
-schemaVersion: "1.2"
+version: 1
 endpoints:
-    - name: youtube-video-upload-helper-endpoint-5c6
-      displayName: youtube-video-upload-helper-endpoint
-      service:
-        basePath: /
-        port: 8080
-      type: REST
-      networkVisibilities:
-        - Project
-        - Public
+  - name: youtube-video-upload-helper-endpoint
+    port: 8080
+    type: REST
+    networkVisibility: Public
+    context: /
