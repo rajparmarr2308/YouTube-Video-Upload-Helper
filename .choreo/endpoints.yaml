@@ -1,10 +1,7 @@
-apiVersion: choreo.dev/v1alpha1
-kind: Endpoint
-metadata:
-  name: youtube-video-upload-helper-endpoint
-spec:
-  ports:
-    - port: 8080
-  context: "/"
-  type: REST
-  visibility: Public
+version: 1
+endpoints:
+  - name: youtube-video-upload-helper-endpoint
+    port: 8080
+    type: REST
+    networkVisibility: Public
+    context: /
