@@ -23,8 +23,8 @@ COPY . .
 # Create upload directory
 RUN mkdir -p uploads && chmod 777 uploads
 
-# Create a non-root user and give ownership of the app directory
-RUN groupadd -r appuser && useradd -r -g appuser -d /home/appuser -m appuser && \
+# Create a non-root user with UID and GID between 10000-20000
+RUN groupadd -g 10001 appuser && useradd -u 10001 -g appuser -d /home/appuser -m appuser && \
     chown -R appuser:appuser /app && \
     chmod -R 755 /app
 
@@ -32,7 +32,7 @@ RUN groupadd -r appuser && useradd -r -g appuser -d /home/appuser -m appuser && 
 EXPOSE 8080
 
 # Switch to non-root user
-USER appuser
+USER 10001
 
 # Command to run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"] 
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
