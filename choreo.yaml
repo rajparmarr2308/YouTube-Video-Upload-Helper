@@ -1,0 +1,32 @@
+components:
+  - name: youtube-video-upload-helper
+    buildPack: docker
+    executable:
+      type: docker
+      definition:
+        ports:
+          - name: http
+            protocol: http
+            port: 8080
+    container:
+      resources:
+        memory: 512Mi
+        cpu: 0.5
+    health:
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        initialDelaySeconds: 15
+        periodSeconds: 5
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        initialDelaySeconds: 30
+        periodSeconds: 10
+    persistent:
+      - path: /app/uploads
+        mode: ReadWriteOnce
+        accessMode: ReadWriteOnce
+        size: 5Gi 
