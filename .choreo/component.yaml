@@ -4,17 +4,8 @@ componentType: service
 buildConfig:
   type: docker
   dockerfilePath: Dockerfile
-  dockerfileContent: ~
   dockerBuildContext: .
-  useExistingDockerfile: true
 runtimeConfig:
-  resourceAllocation:
-    cpu:
-      required: 0.1
-      limit: 1.0
-    memory:
-      required: 250
-      limit: 512
   env:
     - name: PORT
       value: "8080"
