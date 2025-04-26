@@ -35,8 +35,12 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 8080
 
+# Create a temporary directory with appropriate permissions
+RUN mkdir -p /tmp/app_temp && chmod 777 /tmp/app_temp
+ENV TMPDIR /tmp/app_temp
+
 # Switch to non-root user
 USER 10001
 
-# Command to run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
+# Command to run the application with increased max request size and timeouts
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--timeout", "300", "--limit-request-line", "8190", "--limit-request-field_size", "8190", "app:app"]
