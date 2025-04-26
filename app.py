@@ -10,6 +10,7 @@ import nltk
 from services.video_processor import extract_video_content
 from services.content_discovery import get_related_youtube_videos, search_related_blogs
 from services.content_generator import generate_description, generate_tags
+from flask_cors import CORS
 
 # Set NLTK data path to match the one in Dockerfile
 nltk.data.path.append('/app/nltk_data')
@@ -28,6 +29,8 @@ except LookupError:
     nltk.download('stopwords')
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
+
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max upload
 app.config['DEFAULT_DESCRIPTION'] = """
@@ -41,8 +44,16 @@ Tags:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Ensure upload directory exists with proper permissions
+try:
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'], mode=0o777)
+    else:
+        # Ensure directory has correct permissions
+        os.chmod(app.config['UPLOAD_FOLDER'], 0o777)
+    logger.info(f"Upload directory {app.config['UPLOAD_FOLDER']} is ready")
+except Exception as e:
+    logger.error(f"Error setting up upload directory: {str(e)}")
 
 # API keys are optional now
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
@@ -58,61 +69,65 @@ def index():
 
 @app.route('/process_video', methods=['POST'])
 def process_video():
-    if 'video' not in request.files:
-        return jsonify({'error': 'No video file provided'}), 400
-    
-    file = request.files['video']
-    
-    if file.filename == '':
-        return jsonify({'error': 'No video selected'}), 400
-    
-    if file and allowed_file(file.filename):
-        try:
-            # Save the uploaded file to a temporary location
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            # Extract content from video
-            video_summary = extract_video_content(filepath)
-            
-            # Get related content (API keys are optional now)
-            youtube_videos = get_related_youtube_videos(video_summary, YOUTUBE_API_KEY)
-            blog_posts = search_related_blogs(video_summary, SERPAPI_KEY)
-            
-            # Generate tags first
-            tags = generate_tags(video_summary, youtube_videos, blog_posts)
-            
-            # Add short tags to default description
-            enhanced_default_description = app.config['DEFAULT_DESCRIPTION']
-            for tag in tags['short_tags']:
-                enhanced_default_description += f"{tag}\n"
-            
-            # Generate description with the enhanced default description
-            description_data = generate_description(
-                video_summary, 
-                youtube_videos, 
-                blog_posts, 
-                enhanced_default_description
-            )
-            
-            # Clean up the uploaded file
-            os.remove(filepath)
-            
-            return jsonify({
-                'video_summary': video_summary,
-                'youtube_videos': youtube_videos,
-                'blog_posts': blog_posts,
-                'description_data': description_data,
-                'default_description': app.config['DEFAULT_DESCRIPTION'],
-                'tags': tags
-            })
+    try:
+        if 'video' not in request.files:
+            return jsonify({'error': 'No video file provided'}), 400
         
-        except Exception as e:
-            logger.exception("Error processing video")
-            return jsonify({'error': str(e)}), 500
-    
-    return jsonify({'error': 'Invalid file format'}), 400
+        file = request.files['video']
+        
+        if file.filename == '':
+            return jsonify({'error': 'No video selected'}), 400
+        
+        if file and allowed_file(file.filename):
+            try:
+                # Save the uploaded file to a temporary location
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                
+                # Extract content from video
+                video_summary = extract_video_content(filepath)
+                
+                # Get related content (API keys are optional now)
+                youtube_videos = get_related_youtube_videos(video_summary, YOUTUBE_API_KEY)
+                blog_posts = search_related_blogs(video_summary, SERPAPI_KEY)
+                
+                # Generate tags first
+                tags = generate_tags(video_summary, youtube_videos, blog_posts)
+                
+                # Add short tags to default description
+                enhanced_default_description = app.config['DEFAULT_DESCRIPTION']
+                for tag in tags['short_tags']:
+                    enhanced_default_description += f"{tag}\n"
+                
+                # Generate description with the enhanced default description
+                description_data = generate_description(
+                    video_summary, 
+                    youtube_videos, 
+                    blog_posts, 
+                    enhanced_default_description
+                )
+                
+                # Clean up the uploaded file
+                os.remove(filepath)
+                
+                return jsonify({
+                    'video_summary': video_summary,
+                    'youtube_videos': youtube_videos,
+                    'blog_posts': blog_posts,
+                    'description_data': description_data,
+                    'default_description': app.config['DEFAULT_DESCRIPTION'],
+                    'tags': tags
+                })
+            
+            except Exception as e:
+                logger.exception("Error processing video")
+                return jsonify({'error': str(e), 'error_type': type(e).__name__}), 500
+        
+        return jsonify({'error': 'Invalid file format'}), 400
+    except Exception as e:
+        logger.exception("Unexpected error in process_video endpoint")
+        return jsonify({'error': str(e), 'error_type': type(e).__name__, 'route': 'process_video'}), 500
 
 @app.route('/update_default_description', methods=['POST'])
 def update_default_description():
