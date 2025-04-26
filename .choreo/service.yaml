@@ -1,0 +1,7 @@
+apiVersion: choreo.dev/v1alpha1
+kind: Service
+metadata:
+  name: youtube-video-upload-helper
+spec:
+  ports:
+    - port: 8080  # IMPORTANT: Match this to your app's internal exposed port
