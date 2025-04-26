@@ -1,0 +1,70 @@
+openapi: 3.0.1
+info:
+  title: YouTube Video Upload Helper API
+  description: API for processing YouTube videos and generating descriptions and tags
+  version: 1.0.0
+  contact:
+    name: API Support
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+paths:
+  /:
+    get:
+      summary: Home page
+      description: Returns the main web interface
+      responses:
+        '200':
+          description: Returns the HTML for the home page
+  /process_video:
+    post:
+      summary: Process uploaded video
+      description: Uploads, analyzes video content, and generates description and tags
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                video:
+                  type: string
+                  format: binary
+                  description: Video file to process
+      responses:
+        '200':
+          description: Video processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+  /update_default_description:
+    post:
+      summary: Update default description template
+      description: Updates the default description template for video descriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                default_description:
+                  type: string
+      responses:
+        '200':
+          description: Default description updated successfully
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the application
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string 
