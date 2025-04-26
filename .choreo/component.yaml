@@ -1,11 +1,12 @@
 name: youtube-video-upload-helper
 projectName: Default
-componentType: service
-buildConfig:
-  type: docker
+componentType: webapp
+build:
+  buildpacks: []
   dockerfilePath: Dockerfile
-  dockerBuildContext: .
-runtimeConfig:
+  context: .
+run:
+  command: []
   env:
     - name: PORT
       value: "8080"
@@ -13,5 +14,5 @@ endpoints:
   - name: flask-endpoint
     port: 8080
     context: /
-    exposureLevel: public
-    protocol: http
+    exposure: public
+    type: REST
