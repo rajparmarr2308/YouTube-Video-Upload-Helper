@@ -1,5 +1,5 @@
-name: video-processor-flask
-projectName: your-project-name
+name: youtube-video-upload-helper
+projectName: Default
 componentType: webapp
 build:
   buildpacks: []
