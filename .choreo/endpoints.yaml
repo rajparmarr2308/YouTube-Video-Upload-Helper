@@ -1,16 +1,8 @@
 version: 1
-apiType: REST
 schemaFilePath: openapi.yaml
 endpoints:
-  - name: youtube-video-upload-helper-endpoint
+  - name: youtube-video-upload-helper-api
     port: 8080
     type: REST
-    networkVisibility: Public
+    exposureLevel: public
     context: /
-    resources:
-      - path: /process_video
-        methods: [POST]
-      - path: /update_default_description
-        methods: [POST]
-      - path: /health
-        methods: [GET]

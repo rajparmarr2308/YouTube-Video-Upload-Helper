@@ -67,4 +67,4 @@ paths:
                 type: object
                 properties:
                   status:
-                    type: string 
+                    type: string
