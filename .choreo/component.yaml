@@ -1,0 +1,38 @@
+type: service
+name: youtube-video-upload-helper
+version: 1.0.0
+buildPack: docker
+
+endpoints:
+  - name: http-endpoint
+    type: http
+    port: 8080
+    context: /
+    auth:
+      enabled: true
+    visibility: public
+
+deploymentConfig:
+  minReplicas: 1
+  maxReplicas: 2
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 250m
+
+health:
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 15
+    periodSeconds: 5
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10 
