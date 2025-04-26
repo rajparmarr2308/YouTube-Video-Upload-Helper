@@ -1,4 +1,5 @@
 version: 1
+apiType: REST
 schemaFilePath: openapi.yaml
 endpoints:
   - name: youtube-video-upload-helper-endpoint
@@ -6,3 +7,10 @@ endpoints:
     type: REST
     networkVisibility: Public
     context: /
+    resources:
+      - path: /process_video
+        methods: [POST]
+      - path: /update_default_description
+        methods: [POST]
+      - path: /health
+        methods: [GET]
